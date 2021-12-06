@@ -258,7 +258,7 @@ function get_action {
 while [ "$ans" == "" ]
 do
  ans=$(zenity --list \
-  --width=$((720)) --height=$((300)) \
+  --width=$((400)) --height=$((250)) \
   --title="$progname $version - create a boot drive" \
   --text="Select what drive to make" \
   --cancel-label="Quit" \
@@ -269,7 +269,7 @@ do
   n "No-persistent live drive" \
   p "Persistent live drive" \
   w "Windows installer" \
-  q "Quit" \
+  #q "Quit" \
   2> /dev/null)
  ans=${ans:0:1}
 
@@ -317,10 +317,10 @@ fi
 function usbfs {
 
 ans=$(zenity --list \
- --width=$((720)) --height=$((300)) \
+ --width=$((400)) --height=$((200)) \
  --title="$progname $version - create a boot drive" \
  --text="Select file system for 'usbdata' partition" \
- --cancel-label="Quit" \
+ --cancel-label="Cancel" \
  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --column="hotkey" --column="file system" \
  n "NTFS  - default" \
@@ -358,7 +358,7 @@ elif [ $# -le 1 ]
 then
  source=$(/usr/bin/zenity --file-selection \
  --title="$progname $version - select source file" \
- --width=720 --height=300 \
+ --width=4000 --height=200 \
  --filename="$choice" --file-filter={*.i[sm][og]*,*.iso,*.img} \
   2> /dev/null)
 else
@@ -381,10 +381,10 @@ function get_target {
 
 ans=
 ans=$(zenity --list \
-  --width=$((720)) --height=$((300)) \
+  --width=$((400)) --height=$((200)) \
   --title="$progname $version - what target drive is it? " \
   --text="Do you expect the drive to contain <b>filesystems other than VFAT and ISO 9660</b>?" \
-  --cancel-label="Quit" \
+  --cancel-label="Cancel" \
   --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
   --column="hotkey" --column="Alternatives" \
   y "Yes" \
@@ -399,10 +399,10 @@ ans=${ans:0:1}
 if [ "${ans}" != "n" ]
 then
 an2=$(zenity --list \
-  --width=$((720)) --height=$((300)) \
+  --width=$((400)) --height=$((200)) \
   --title="$progname $version - what target drive is it? " \
   --text="Do you expect the drive to contain an ISO 9660 filesystem?" \
-  --cancel-label="Quit" \
+  --cancel-label="Cancel" \
   --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
   --column="hotkey" --column="Alternatives" \
   y "Yes" \
@@ -440,25 +440,26 @@ spawn bash -c "xorriso-dd-target -plug_test -trust_lsblk_udev $tmpstr | tee $tmp
 expect "Step 1:*\r"
 system  /usr/bin/zenity --info \
  --title="$progname $version - step 1" \
- --width=720 --height=300 \
+ --width=400 --height=200 \
  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --text="Attempt to find the desired device \
 by watching it appear after being plugged in\n\n\
-Step 1:\n\n\
-Please make sure that the desired target device is plugged <b>out</b> now.\n\
-If it is currently plugged in, make sure to <b>unmount</b> all its fileystems\n\
+<b>Step 1:</b>\n\
+Please make sure that the desired target device is plugged <b>out</b> now.\
+If it is currently plugged in, make sure to <b>unmount</b> all its fileystems \
 and then <b>unplug</b> it.\n\n\
-Press the Enter key when ready." \
+Press the OK or Enter key when ready." \
  2> /dev/null
 send -- " \r"
 
 expect "Step 2:*\r"
 system  /usr/bin/zenity --info \
  --title="$progname $version - step 2" \
- --width=720 --height=180 \
+ --width=400 --height=200 \
  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
- --text="Step 2:\n\n\
-Please <b>plug in</b> the desired target device and then press the Enter key" \
+ --text="<b>Step 2:</b>\n\
+Please <b>plug in</b> the desired target device.\n\n\
+Press the OK or Enter key when ready." \
  2> /dev/null
 send -- " \r"
 
@@ -675,7 +676,7 @@ blklist=$(sudo lsblk -lo MODEL,NAME,FSTYPE,LABEL,SIZE "$target")
 
 zenity --question \
  --title="$progname $version - look carefully" \
- --width=960 --height=480 \
+ --width=400 --height=200 \
  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --text="Target device '$target'
 
@@ -722,4 +723,8 @@ then
 #  echo "action=cloner"
   sudo mkusb-sedd --cloner "$source" "$target"
  fi
+else
+  zenity --info --title="$progname $version - exiting" --timeout 1 \
+ --width=350 --height=150 \
+  --text="Exiting mkusb..."
 fi
