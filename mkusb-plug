@@ -269,7 +269,7 @@ do
   n "No-persistent live drive" \
   p "Persistent live drive" \
   w "Windows installer" \
-  #q "Quit" \
+ # q "Quit" \
   2> /dev/null)
  ans=${ans:0:1}
 
@@ -293,7 +293,7 @@ do
  then
   towindows=true
   echo "-tow"
- elif [ "${ans}" == "q" ] || [ "${ans}" == "" ]
+ elif [ "${ans}" == "" ]
  then
   echo -e "$redback terminated by user $resetvid"
   exit
@@ -379,36 +379,34 @@ function get_target {
 
 # xorriso-dd-target [-with_sudo] -plug_test, -list_long, -look_for_iso
 
-ans=
-ans=$(zenity --list \
-  --width=$((400)) --height=$((200)) \
-  --title="$progname $version - what target drive is it? " \
-  --text="Do you expect the drive to contain <b>filesystems other than VFAT and ISO 9660</b>?" \
-  --cancel-label="Cancel" \
-  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
-  --column="hotkey" --column="Alternatives" \
-  y "Yes" \
-  n "No" \
-  D "I don't know" \
-  2> /dev/null)
-ans=${ans:0:1}
+#ans=
+#ans=$(zenity --list \
+#  --width=$((400)) --height=$((200)) \
+#  --title="$progname $version - what target drive is it? " \
+#  --text="Do you expect the drive to contain <b>filesystems other than VFAT and ISO 9660</b>?" \
+#  --cancel-label="Cancel" \
+#  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
+#  --column="hotkey" --column="Alternatives" \
+#  y "Yes or I don't know" \
+#  n "No" \
+#   2> /dev/null)
+#ans=${ans:0:1}
   
-#  echo "ans=$ans"
+#echo "ans=$ans"
 #read -p "Do you expect the drive to contain filesystems other than VFAT and ISO 9660?
 #Answer Yes or No or Dunno (y/n/D) " ans
-if [ "${ans}" != "n" ]
-then
+#if [ "${ans}" != "n" ]
+#then
 an2=$(zenity --list \
   --width=$((400)) --height=$((200)) \
   --title="$progname $version - what target drive is it? " \
   --text="Do you expect the drive to contain an ISO 9660 filesystem?" \
-  --cancel-label="Cancel" \
+  --cancel-label="Quit" \
   --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
   --column="hotkey" --column="Alternatives" \
   y "Yes" \
   n "No" \
-  d "I don't know" \
-  q "Quit - default" \
+  q "I don't know / Quit (default)" \
   2> /dev/null)
 an2=${an2:0:1}
 #  read -p "Do you expect the drive to contain an ISO 9660 filesystem?
@@ -423,9 +421,9 @@ an2=${an2:0:1}
   else
     tmpstr=
   fi
-else
-  tmpstr=
-fi
+#else
+#  tmpstr=
+#fi
 
 tmpfil=$(mktemp)
 
@@ -448,7 +446,7 @@ by watching it appear after being plugged in\n\n\
 Please make sure that the desired target device is plugged <b>out</b> now.\
 If it is currently plugged in, make sure to <b>unmount</b> all its fileystems \
 and then <b>unplug</b> it.\n\n\
-Press the OK or Enter key when ready." \
+Press the OK button or Enter key when ready." \
  2> /dev/null
 send -- " \r"
 
@@ -459,7 +457,7 @@ system  /usr/bin/zenity --info \
  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --text="<b>Step 2:</b>\n\
 Please <b>plug in</b> the desired target device.\n\n\
-Press the OK or Enter key when ready." \
+Press the OK button or Enter key when ready." \
  2> /dev/null
 send -- " \r"
 
