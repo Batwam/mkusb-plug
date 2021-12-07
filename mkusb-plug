@@ -379,24 +379,24 @@ function get_target {
 
 # xorriso-dd-target [-with_sudo] -plug_test, -list_long, -look_for_iso
 
-ans=
-ans=$(zenity --list \
-  --width=$((400)) --height=$((200)) \
-  --title="$progname $version - what target drive is it? " \
-  --text="Do you expect the drive to contain <b>filesystems other than VFAT and ISO 9660</b>?" \
-  --cancel-label="Cancel" \
-  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
-  --column="hotkey" --column="Alternatives" \
-  y "Yes or I don't know" \
-  n "No" \
-   2> /dev/null)
-ans=${ans:0:1}
+#ans=
+#ans=$(zenity --list \
+#  --width=$((400)) --height=$((200)) \
+#  --title="$progname $version - what target drive is it? " \
+#  --text="Do you expect the drive to contain <b>filesystems other than VFAT and ISO 9660</b>?" \
+#  --cancel-label="Cancel" \
+##  --window-icon="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
+#  --column="hotkey" --column="Alternatives" \
+#  y "Yes or I don't know" \
+#  n "No" \
+#   2> /dev/null)
+#ans=${ans:0:1}
   
 #echo "ans=$ans"
 #read -p "Do you expect the drive to contain filesystems other than VFAT and ISO 9660?
 #Answer Yes or No or Dunno (y/n/D) " ans
-if [ "${ans}" != "n" ]
-then
+#if [ "${ans}" != "n" ]
+#then
 an2=$(zenity --list \
   --width=$((400)) --height=$((200)) \
   --title="$progname $version - what target drive is it? " \
@@ -421,9 +421,9 @@ an2=${an2:0:1}
   else
     tmpstr=
   fi
-else
-  tmpstr=
-fi
+#else
+#  tmpstr=
+#fi
 
 tmpfil=$(mktemp)
 
