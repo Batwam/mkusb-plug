@@ -387,7 +387,7 @@ elif [ $# -le 1 ]
 then
  source=$(yad --file-selection \
  --title="$progname $version - select source file" \
- --width=$Xdialog --height=$Ydialog \
+ --width=$Xdialog --fixed \
  --filename="$choice" --file-filter={*.i[sm][og]*,*.iso,*.img} \
   2> /dev/null)
 else
@@ -466,7 +466,7 @@ spawn bash -c "xorriso-dd-target -plug_test -trust_lsblk_udev $tmpstr | tee $tmp
 expect "Step 1:*\r"
 system  yad \
  --title="$progname $version - step 1" \
- --width=$Xdialog --height=$Ydialog --fixed \
+ --width=$Xdialog --fixed \
  --image="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --text="Attempt to find the desired device \
 by watching it appear after being plugged in:\n\n\
@@ -481,7 +481,7 @@ send -- " \r"
 expect "Step 2:*\r"
 system  yad \
  --title="$progname $version - step 2" \
- --width=$Xdialog --height=$Ydialog --fixed\
+ --width=$Xdialog --fixed\
  --image="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --text="<b>Step 2:</b>\n\
 Please <b>plug in</b> the desired target device.\n\n\\n\n\
