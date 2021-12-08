@@ -95,12 +95,9 @@ source=
 target=
 manager=
 
-Xdialog=500 #min width of dialog boxes
-Xdialog_small=250
-Xdialog_large=960
+Xdialog=720 #min width of dialog boxes
 Ydialog=300 #min heigth of dialog boxes
-Ydialog_large=480
-Ydialog_small=150
+
 #Attempt to automatically read resolution from xrandr
 # we MUST be running xrandr 1.3 or higher
 if [ $(echo "$XDG_SESSION_TYPE" | grep "x11") == "x11" ] 
@@ -112,13 +109,20 @@ then
     Xres=`xrandr -q | grep "connected primary" | grep -v disconnected | cut -d "+" -f1 | cut -d' ' -f4 | cut -dx -f1`
     Yres=`xrandr -q | grep "connected primary" | grep -v disconnected | cut -d "+" -f1 | cut -d' ' -f4 | cut -dx -f2`
     let Xdialog=Xres/8+240
-    let Xdialog_small=Xdialog/2
-    let Xdialog_large=Xdialog*13/10
+    
     let Ydialog=Yres/16+165
-    let Ydialog_small=Ydialog/2
-    let Ydialog_large=Ydialog*16/10
+
   fi
 fi
+
+#alternative window sizes
+let Xdialog_small=Xdialog/2
+let Xdialog_large=Xdialog*13/10
+let Xdialog_Xlarge=Xdialog*15/10
+let Ydialog_small=Ydialog/2
+let Ydialog_large=Ydialog*16/10
+let Ydialog_Xlarge=2*Ydialog
+
 
 ########################################################################
 
@@ -387,7 +391,7 @@ elif [ $# -le 1 ]
 then
  source=$(yad --file-selection \
  --title="$progname $version - select source file" \
- --width=$Xdialog --fixed \
+ --width=$Xdialog_Xlarge --height=$Ydialog_Xlarge \
  --filename="$choice" --file-filter={*.i[sm][og]*,*.iso,*.img} \
   2> /dev/null)
 else
