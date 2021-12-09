@@ -72,7 +72,7 @@
 # 2021-11-22  sudodus  quoted grep 'patterns'
 # 2021-12-08  batwam   replaced zenity with yad and various other dialog updates
 
-#Non Ubuntu 20.04 standard dependancies packages: yad
+#Non Ubuntu 20.04 standard dependancies packages: yad (universe repo)
 
 version=2.8.6
 
@@ -108,20 +108,18 @@ then
     #echo "RandR version > 1.02"
     Xres=`xrandr -q | grep "connected primary" | grep -v disconnected | cut -d "+" -f1 | cut -d' ' -f4 | cut -dx -f1`
     Yres=`xrandr -q | grep "connected primary" | grep -v disconnected | cut -d "+" -f1 | cut -d' ' -f4 | cut -dx -f2`
-    let Xdialog=Xres/8+240
-    
+    let Xdialog=Xres/16+480
     let Ydialog=Yres/16+165
-
   fi
 fi
 
 #alternative window sizes
 let Xdialog_small=Xdialog/2
 let Xdialog_large=Xdialog*13/10
-let Xdialog_Xlarge=Xdialog*15/10
+let Xdialog_XL=Xdialog*15/10
 let Ydialog_small=Ydialog/2
 let Ydialog_large=Ydialog*16/10
-let Ydialog_Xlarge=2*Ydialog
+let Ydialog_XL=2*Ydialog
 
 
 ########################################################################
@@ -391,7 +389,7 @@ elif [ $# -le 1 ]
 then
  source=$(yad --file-selection \
  --title="$progname $version - select source file" \
- --width=$Xdialog_Xlarge --height=$Ydialog_Xlarge \
+ --width=$Xdialog_XL --height=$Ydialog_XL \
  --filename="$choice" --file-filter={*.i[sm][og]*,*.iso,*.img} \
   2> /dev/null)
 else
@@ -412,26 +410,8 @@ function get_target {
 
 # xorriso-dd-target [-with_sudo] -plug_test, -list_long, -look_for_iso
 
-#ans=
-#ans=$(yad --list \
-#  --width=$(($Xdialog)) --height=$(($Ydialog)) \
-#  --title="$progname $version - what target drive is it? " \
-#  --text="Do you expect the drive to contain <b>filesystems other than VFAT and ISO 9660</b>?" \
-#  --cancel-label="Cancel" \
-##  --image="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
-#  --column="hotkey" --column="Alternatives" \
-#  y "Yes or I don't know" \
-#  n "No" \
-#   2> /dev/null)
-#ans=${ans:0:1}
-  
-#echo "ans=$ans"
-#read -p "Do you expect the drive to contain filesystems other than VFAT and ISO 9660?
-#Answer Yes or No or Dunno (y/n/D) " ans
-#if [ "${ans}" != "n" ]
-#then
 an2=$(yad --list \
-  --width=$(($Xdialog)) --height=$(($Ydialog)) \
+  --width=$Xdialog --height=$Ydialog \
   --title="$progname $version - what target drive is it? " \
   --text="Do you expect the drive to contain an ISO 9660 or VFAT filesystem?" \
   --image="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
@@ -443,19 +423,16 @@ an2=${an2:0:1}
 echo ${an2}
 #  read -p "Do you expect the drive to contain an ISO 9660 filesystem?
 #Answer Yes or No or Dunno or Quit (y/n/d/q) " an2
-  if [ "${an2}" == "y" ]
-  then
-    tmpstr="-look_for_iso"
-  elif [ "${an2}" == "" ] # || [ "${an2}" == "q" ]
-  then
-    echo -e "$redback terminated by user $resetvid"
-    exit 1
-  else
-    tmpstr=
-  fi
-#else
-#  tmpstr=
-#fi
+if [ "${an2}" == "y" ]
+then
+  tmpstr="-look_for_iso"
+elif [ "${an2}" == "" ] # || [ "${an2}" == "q" ]
+then
+  echo -e "$redback terminated by user $resetvid"
+  exit 1
+else
+  tmpstr=
+fi
 
 tmpfil=$(mktemp)
 
@@ -706,7 +683,7 @@ blklist=$(sudo lsblk -lo MODEL,NAME,FSTYPE,LABEL,SIZE "$target")
 
 yad \
  --title="$progname $version - look carefully" \
- --width=$Xdialog --height=$Ydialog --fixed \
+ --width=$Xdialog --fixed \
  --image="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --text="Target device '$target'
 
