@@ -70,9 +70,9 @@
 #                      identify new versions of Ubuntu (.disk/info)
 #                      and a minor cosmetic tweak (zenity window size)
 # 2021-11-22  sudodus  quoted grep 'patterns'
-# 2021-12-08  batwam   replaced zenity with yad and various other dialog updates
+# 2021-12-11  batwam   replaced zenity with yad and various other dialog updates
 
-#Non Ubuntu 20.04 standard dependancies packages: yad (universe repo)
+#Non Ubuntu 20.04 standard dependancies packages: yad , xdotool (universe repo)
 
 version=2.8.6
 
@@ -98,19 +98,57 @@ manager=
 Xdialog=720 #min width of dialog boxes
 Ydialog=300 #min heigth of dialog boxes
 
-#Attempt to automatically read resolution from xrandr
+#Attempt to automatically work out the screen resolution from xrandr/xdotool information
 # we MUST be running xrandr 1.3 or higher
 if [ $(echo "$XDG_SESSION_TYPE" | grep "x11") == "x11" ] 
 then
   #echo "x11 ok"
   if [ ! `xrandr -v | grep "RandR version 1.[012]"`]
   then
-    #echo "RandR version > 1.02"
-    Xres=`xrandr -q | grep "connected primary" | grep -v disconnected | cut -d "+" -f1 | cut -d' ' -f4 | cut -dx -f1`
-    Yres=`xrandr -q | grep "connected primary" | grep -v disconnected | cut -d "+" -f1 | cut -d' ' -f4 | cut -dx -f2`
-    let Xdialog=Xres/16+480
-    let Ydialog=Yres/16+165
+    if [ -x "$(command -v xdotool)" ]
+    then
+      ScreenCount=`xrandr -q | grep " connected " | wc -l`
+      #get mouse location
+      WindowLocX=`xdotool getmouselocation --shell | grep X= | cut -d= -f2`
+      WindowLocY=`xdotool getmouselocation --shell | grep Y= | cut -d= -f2`
+      #for i in $(eval echo "{1..$ScreenCount}")
+      i=1
+      while [ $i -le $ScreenCount ]
+      do
+        #list and save the resolutions
+        ScreenRes=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o ' [0-9]*x[0-9]*+'| sed -e 's/ //' -e 's/+//'`
+        ScreenResX[$i]=`echo $ScreenRes | cut -dx -f1`
+        ScreenResY[$i]=`echo $ScreenRes | cut -dx -f2`
+
+        #list and save the min/max X position for each screen
+        ScreenPos=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
+        ScreenXmin=`echo $ScreenPos | cut -d+ -f1`
+        ScreenYmin=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'| cut -d+ -f2`
+        let ScreenXmax=$ScreenXmin+${ScreenResX[$i]}
+        let ScreenYmax=$ScreenYmin+${ScreenResY[$i]}
+        echo Screen $i:${ScreenResX[$i]}x${ScreenResY[$i]}
+        if [ $WindowLocX -gt $ScreenXmin ] && [ $WindowLocX -le $ScreenXmax ] && [ $WindowLocY -gt $ScreenYmin ] && [ $WindowLocY -le $ScreenYmax ] 
+        then
+          echo "This screen is active!"
+          break
+        else
+          echo "This screen is not active!"
+          let i=$i+1
+        fi
+      done
+      #echo "RandR version > 1.02"
+      Xres=${ScreenResX[$i]}
+      Yres=${ScreenResY[$i]}
+      #echo The Active Screen Resolution is $Xres x $Yres
+
+      let Xdialog=Xres/16+480
+      let Ydialog=Yres/16+165
+    fi
+  else
+    echo "Please install xdotool (sudo apt install xdotool) for automated screen resolution recognition"
   fi
+else
+  echo "RandR version > 1.02 required for automated screen resolution recognition"
 fi
 
 #alternative window sizes
@@ -121,6 +159,9 @@ let Ydialog_small=Ydialog/2
 let Ydialog_large=Ydialog*16/10
 let Ydialog_XL=2*Ydialog
 
+  yad --info --title="$progname $version - exiting" --timeout 3 \
+  --width=$Xdialog_small --height=$Ydialog_small \
+  --text="\n\n   Your screen resolution is $Xres x $Yres..."
 
 ########################################################################
 
@@ -354,7 +395,7 @@ ans=$(yad --list \
  --text="Select file system for 'usbdata' partition" \
  --image="/usr/share/icons/hicolor/48x48/apps/mkusb.png" \
  --column="hotkey" --column="file system" \
- n "NTFS  - default" \
+ n "NTFS  (default)" \
  e "exFAT" \
  f "FAT32" \
  2> /dev/null)
