@@ -100,10 +100,10 @@ Ydialog=300 #min heigth of dialog boxes
 
 #Attempt to automatically work out the screen resolution from xrandr/xdotool information
 # we MUST be running xrandr 1.3 or higher
-if [ $(echo "$XDG_SESSION_TYPE" | grep "x11") == "x11" ] 
+if [ $(echo "$XDG_SESSION_TYPE") == "x11" ]
 then
   #echo "x11 ok"
-  if [ ! `xrandr -v | grep "RandR version 1.[012]"`]
+  if [ ! `xrandr -v | grep "RandR version 1.[012]"` ]
   then
     if [ -x "$(command -v xdotool)" ]
     then
@@ -133,7 +133,7 @@ then
             echo "Screen #$i is active!"
             break
         else
-            echo "Screen # $i is not active!"
+            echo "Screen #$i is not active!"
         fi
         let i=$i+1
       done
