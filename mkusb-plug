@@ -124,7 +124,7 @@ then
         #list and save the min/max X position for each screen
         ScreenPos=`xrandr -q | grep " connected " | grep -m$i "+"| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
         ScreenXmin=`echo $ScreenPos | cut -d+ -f1`
-        ScreenYmin=`xrandr -q | grep " connected " | grep -m$i "+"| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'| cut -d+ -f2`
+        ScreenYmin=`echo $ScreenPos | cut -d+ -f2`
         let ScreenXmax=$ScreenXmin+${ScreenResX[$i]}
         let ScreenYmax=$ScreenYmin+${ScreenResY[$i]}
         echo Screen $i:${ScreenResX[$i]}x${ScreenResY[$i]}
