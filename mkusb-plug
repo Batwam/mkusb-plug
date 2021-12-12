@@ -115,40 +115,51 @@ then
       i=1
       while [ $i -le $ScreenCount ]
       do
-        #list and save the resolutions
-        ScreenRes=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o ' [0-9]*x[0-9]*+'| sed -e 's/ //' -e 's/+//'`
-        ScreenResX[$i]=`echo $ScreenRes | cut -dx -f1`
-        ScreenResY[$i]=`echo $ScreenRes | cut -dx -f2`
-
-        #list and save the min/max X position for each screen
-        ScreenPos=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
-        ScreenXmin=`echo $ScreenPos | cut -d+ -f1`
-        ScreenYmin=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'| cut -d+ -f2`
-        let ScreenXmax=$ScreenXmin+${ScreenResX[$i]}
-        let ScreenYmax=$ScreenYmin+${ScreenResY[$i]}
-        echo Screen $i:${ScreenResX[$i]}x${ScreenResY[$i]}
-        if [ $WindowLocX -gt $ScreenXmin ] && [ $WindowLocX -le $ScreenXmax ] && [ $WindowLocY -gt $ScreenYmin ] && [ $WindowLocY -le $ScreenYmax ] 
+        test=`xrandr -q | grep -m$i " connected "| tail -n1`
+        echo $test
+        if [ "$test" != "" ]
         then
-          echo "This screen is active!"
-          break
+            #list and save the resolutions
+            ScreenRes=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o ' [0-9]*x[0-9]*+'| sed -e 's/ //' -e 's/+//'`
+            ScreenResX[$i]=`echo $ScreenRes | cut -dx -f1`
+            ScreenResY[$i]=`echo $ScreenRes | cut -dx -f2`
+
+            #list and save the min/max X position for each screen
+            ScreenPos=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
+            ScreenXmin=`echo $ScreenPos | cut -d+ -f1`
+            ScreenYmin=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'| cut -d+ -f2`
+            let ScreenXmax=$ScreenXmin+${ScreenResX[$i]}
+            let ScreenYmax=$ScreenYmin+${ScreenResY[$i]}
+            echo Screen $i:${ScreenResX[$i]}x${ScreenResY[$i]}
+            if [ $WindowLocX -gt $ScreenXmin ] && [ $WindowLocX -le $ScreenXmax ] && [ $WindowLocY -gt $ScreenYmin ] && [ $WindowLocY -le $ScreenYmax ]
+            then
+            echo "Screen #$i is active!"
+            break
+            else
+            echo "Screen # $i is not active!"
+            fi
         else
-          echo "This screen is not active!"
-          let i=$i+1
+            echo "Screen #$i is connected but turned off... ignoring."
         fi
+        let i=$i+1
       done
       #echo "RandR version > 1.02"
       Xres=${ScreenResX[$i]}
       Yres=${ScreenResY[$i]}
       #echo The Active Screen Resolution is $Xres x $Yres
+        yad --info --title="$progname $version - exiting" --timeout 3 \
+        --text="\n\n   Your screen resolution is $Xres x $Yres..."
 
       let Xdialog=Xres/16+480
       let Ydialog=Yres/16+165
+    else
+        echo "Please install xdotool ("sudo apt install xdotool") for automated screen resolution recognition"
     fi
   else
-    echo "Please install xdotool (sudo apt install xdotool) for automated screen resolution recognition"
+    echo "RandR version > 1.02 required for automated screen resolution recognition, please update your sytem to use the automated resolution identification"
   fi
 else
-  echo "RandR version > 1.02 required for automated screen resolution recognition"
+  echo "This is not an X11 session, the script is currently unable to establish the resolution"
 fi
 
 #alternative window sizes
@@ -158,10 +169,6 @@ let Xdialog_XL=Xdialog*15/10
 let Ydialog_small=Ydialog/2
 let Ydialog_large=Ydialog*16/10
 let Ydialog_XL=2*Ydialog
-
-  yad --info --title="$progname $version - exiting" --timeout 3 \
-  --width=$Xdialog_small --height=$Ydialog_small \
-  --text="\n\n   Your screen resolution is $Xres x $Yres..."
 
 ########################################################################
 
