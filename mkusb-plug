@@ -107,7 +107,8 @@ then
   then
     if [ -x "$(command -v xdotool)" ]
     then
-      ScreenCount=`xrandr -q | grep " connected " | wc -l`
+        #check how many screens are on. include "+" as some screens are connected but turned off and don't have a resolution
+      ScreenCount=`xrandr -q | grep " connected " |  grep "+" |wc -l`
       #get mouse location
       WindowLocX=`xdotool getmouselocation --shell | grep X= | cut -d= -f2`
       WindowLocY=`xdotool getmouselocation --shell | grep Y= | cut -d= -f2`
@@ -115,31 +116,24 @@ then
       i=1
       while [ $i -le $ScreenCount ]
       do
-        test=`xrandr -q | grep -m$i " connected "| tail -n1`
-        echo $test
-        if [ "$test" != "" ]
-        then
-            #list and save the resolutions
-            ScreenRes=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o ' [0-9]*x[0-9]*+'| sed -e 's/ //' -e 's/+//'`
-            ScreenResX[$i]=`echo $ScreenRes | cut -dx -f1`
-            ScreenResY[$i]=`echo $ScreenRes | cut -dx -f2`
+        #list and save the resolutions
+        ScreenRes=`xrandr -q | grep " connected " | grep -m$i "+"| tail -n1|grep -o ' [0-9]*x[0-9]*+'| sed -e 's/ //' -e 's/+//'`
+        ScreenResX[$i]=`echo $ScreenRes | cut -dx -f1`
+        ScreenResY[$i]=`echo $ScreenRes | cut -dx -f2`
 
-            #list and save the min/max X position for each screen
-            ScreenPos=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
-            ScreenXmin=`echo $ScreenPos | cut -d+ -f1`
-            ScreenYmin=`xrandr -q | grep -m$i " connected "| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'| cut -d+ -f2`
-            let ScreenXmax=$ScreenXmin+${ScreenResX[$i]}
-            let ScreenYmax=$ScreenYmin+${ScreenResY[$i]}
-            echo Screen $i:${ScreenResX[$i]}x${ScreenResY[$i]}
-            if [ $WindowLocX -gt $ScreenXmin ] && [ $WindowLocX -le $ScreenXmax ] && [ $WindowLocY -gt $ScreenYmin ] && [ $WindowLocY -le $ScreenYmax ]
-            then
+        #list and save the min/max X position for each screen
+        ScreenPos=`xrandr -q | grep " connected " | grep -m$i "+"| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
+        ScreenXmin=`echo $ScreenPos | cut -d+ -f1`
+        ScreenYmin=`xrandr -q | grep " connected " | grep -m$i "+"| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'| cut -d+ -f2`
+        let ScreenXmax=$ScreenXmin+${ScreenResX[$i]}
+        let ScreenYmax=$ScreenYmin+${ScreenResY[$i]}
+        echo Screen $i:${ScreenResX[$i]}x${ScreenResY[$i]}
+        if [ $WindowLocX -gt $ScreenXmin ] && [ $WindowLocX -le $ScreenXmax ] && [ $WindowLocY -gt $ScreenYmin ] && [ $WindowLocY -le $ScreenYmax ]
+        then
             echo "Screen #$i is active!"
             break
-            else
-            echo "Screen # $i is not active!"
-            fi
         else
-            echo "Screen #$i is connected but turned off... ignoring."
+            echo "Screen # $i is not active!"
         fi
         let i=$i+1
       done
