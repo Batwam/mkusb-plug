@@ -95,6 +95,9 @@ source=
 target=
 manager=
 
+function set_yad_size {
+#function to set the sides for yad dialog windows
+
 Xdialog=720 #min width of dialog boxes
 Ydialog=300 #min heigth of dialog boxes
 
@@ -108,7 +111,7 @@ then
     if [ -x "$(command -v xdotool)" ]
     then
         #check how many screens are on. include "+" as some screens are connected but turned off and don't have a resolution
-      ScreenCount=`xrandr -q | grep " connected " |  grep "+" |wc -l`
+      ScreenCount=`xrandr -q | grep " connected " |  grep "+[0-9]*+[0-9]" |wc -l`
       #get mouse location
       WindowLocX=`xdotool getmouselocation --shell | grep X= | cut -d= -f2`
       WindowLocY=`xdotool getmouselocation --shell | grep Y= | cut -d= -f2`
@@ -117,35 +120,30 @@ then
       while [ $i -le $ScreenCount ]
       do
         #list and save the resolutions
-        ScreenRes=`xrandr -q | grep " connected " | grep -m$i "+"| tail -n1|grep -o ' [0-9]*x[0-9]*+'| sed -e 's/ //' -e 's/+//'`
-        ScreenResX[$i]=`echo $ScreenRes | cut -dx -f1`
-        ScreenResY[$i]=`echo $ScreenRes | cut -dx -f2`
+        ScreenRes=`xrandr -q | grep " connected " | grep -m$i "+[0-9]*+[0-9]"| tail -n1|grep -o ' [0-9]*x[0-9]*+'| sed -e 's/ //' -e 's/+//'`
+        ScreenResX=`echo $ScreenRes | cut -dx -f1`
+        ScreenResY=`echo $ScreenRes | cut -dx -f2`
 
         #list and save the min/max X position for each screen
-        ScreenPos=`xrandr -q | grep " connected " | grep -m$i "+"| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
+        ScreenPos=`xrandr -q | grep " connected " | grep -m$i "+[0-9]*+[0-9]"| tail -n1|grep -o '+[0-9]*+[0-9]* '| sed -e 's/ //' -e 's/+//'`
         ScreenXmin=`echo $ScreenPos | cut -d+ -f1`
         ScreenYmin=`echo $ScreenPos | cut -d+ -f2`
-        let ScreenXmax=$ScreenXmin+${ScreenResX[$i]}
-        let ScreenYmax=$ScreenYmin+${ScreenResY[$i]}
-        echo Screen $i:${ScreenResX[$i]}x${ScreenResY[$i]}
+        let ScreenXmax=$ScreenXmin+$ScreenResX
+        let ScreenYmax=$ScreenYmin+$ScreenResY
+        #echo Screen $i:$ScreenResX x $ScreenResY
+        #leave loop if mouse cursor is within screen (identified active screen)
         if [ $WindowLocX -gt $ScreenXmin ] && [ $WindowLocX -le $ScreenXmax ] && [ $WindowLocY -gt $ScreenYmin ] && [ $WindowLocY -le $ScreenYmax ]
-        then
-            echo "Screen #$i is active!"
-            break
-        else
-            echo "Screen #$i is not active!"
+          then
+              echo "Screen #$i ($ScreenRes) is active!"
+              break
         fi
         let i=$i+1
       done
-      #echo "RandR version > 1.02"
-      Xres=${ScreenResX[$i]}
-      Yres=${ScreenResY[$i]}
-      #echo The Active Screen Resolution is $Xres x $Yres
-        yad --info --title="$progname $version - exiting" --timeout 3 \
-        --text="\n\n   Your screen resolution is $Xres x $Yres..."
-
-      let Xdialog=Xres/16+480
-      let Ydialog=Yres/16+165
+      yad --info --title="$progname $version - exiting" --timeout 3 \
+        --text="\n\n   Your screen resolution is ${ScreenResX}x${ScreenResY}..."
+      
+      let Xdialog=$ScreenResX/16+480
+      let Ydialog=$ScreenResY/16+165
     else
         echo "Please install xdotool ("sudo apt install xdotool") for automated screen resolution recognition"
     fi
@@ -163,6 +161,7 @@ let Xdialog_XL=Xdialog*15/10
 let Ydialog_small=Ydialog/2
 let Ydialog_large=Ydialog*16/10
 let Ydialog_XL=2*Ydialog
+}
 
 ########################################################################
 
@@ -702,11 +701,15 @@ fi
 test_host
 
 p_yadtest
+
 if [ $? -ne 0 ]
 then
  echo -e "$redback $progname needs a graphical user interface and the program 'yad' (try "sudo apt get yad") $resetvid"
  exit 1
 fi
+
+set_yad_size #set size for yad dialogs based on screen resolution
+
 p_cal1 "-z"
 test_tool xorriso-dd-target exit
 test_tool sudo mkusb-sedd exit
